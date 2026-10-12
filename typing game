@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深夜拉麵：指尖上的職人魂</title>
+    <style>
+        :root {
+            --bg-deep: #0b0b0b;
+            --bg-card: #161616;
+            --text-main: #f0f0f0;
+            --text-muted: #9a9a9a;
+            --accent: #ffb300;
+            --accent-glow: rgba(255, 179, 0, 0.4);
+            --correct: #4caf50;
+            --incorrect: #e53935;
+            --border: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Noto Serif TC', serif, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        /* 封面（還原原本最順眼的復古木質暖色漸層） */
+        #cover-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #16110e 0%, #22150d 50%, #0d0d0d 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            border: 6px double #3a2510;
+        }
+
+        .cover-lantern-left, .cover-lantern-right {
+            position: absolute;
+            top: 40px;
+            width: 60px;
+            height: 80px;
+            background-color: #b71c1c;
+            border-radius: 8px;
+            color: var(--accent);
+            font-size: 28px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 25px rgba(255, 179, 0, 0.4);
+            border: 2px solid #5a0e0e;
+        }
+        .cover-lantern-left { left: 80px; }
+        .cover-lantern-right { right: 80px; }
+
+        .cover-bowl-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px rgba(255, 179, 0, 0.3));
+            animation: floatBowl 3s ease-in-out infinite;
+        }
+
+        @keyframes floatBowl {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .cover-title {
+            font-size: 44px;
+            color: var(--accent);
+            margin: 0 0 10px 0;
+            letter-spacing: 4px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .cover-subtitle {
+            font-size: 18px;
+            color: #ccc;
+            margin-bottom: 40px;
+            letter-spacing: 2px;
+        }
+
+        .btn-start {
+            background-color: var(--accent);
+            color: #111;
+            border: none;
+            padding: 16px 50px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px var(--accent-glow);
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        .btn-start:hover {
+            background-color: #ffa000;
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 179, 0, 0.6);
+        }
+
+        /* 遊戲主容器與主題風格 */
+        .game-wrapper {
+            background-color: var(--bg-card);
+            padding: 35px 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+            width: 100%;
+            max-width: 750px;
+            text-align: center;
+            border: 2px solid var(--border);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .stage-theme-0 { border-color: #5c4033; background: linear-gradient(180deg, #181412 0%, #161616 100%); }
+        .stage-theme-1 { border-color: #00838f; background: linear-gradient(180deg, #09191d 0%, #161616 100%); }
+        .stage-theme-2 { border-color: #ff7043; background: linear-gradient(180deg, #220c02 0%, #161616 100%); }
+        .stage-theme-3 { border-color: #6a1b9a; background: linear-gradient(180deg, #180c22 0%, #161616 100%); }
+
+        .game-wrapper.alert-flash {
+            border-color: var(--incorrect) !important;
+            box-shadow: 0 0 25px rgba(229, 57, 53, 0.7) !important;
+        }
+
+        /* 故事導覽 */
+        #story-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(5, 5, 5, 0.96);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .story-center-box {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .story-header-title {
+            color: var(--accent);
+            font-size: 24px;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+
+        .story-content-text {
+            font-size: 20px;
+            line-height: 2.4;
+            color: #dedede;
+            min-height: 130px;
+            margin-bottom: 40px;
+            white-space: pre-line;
+            text-align: center;
+        }
+
+        .story-nav-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            pointer-events: auto;
+        }
+
+        .story-tip {
+            color: #666;
+            font-size: 13px;
+            margin-top: 25px;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(20, 20, 20, 0.95);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .menu-lantern {
+            position: absolute;
+            top: -20px;
+            width: 40px;
+            height: 50px;
+            background-color: #b71c1c;
+            border-radius: 5px;
+            color: var(--accent);
+            font-size: 24px;
+            line-height: 50px;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 179, 0, 0.3);
+            border: 2px solid #5a0e0e;
+        }
+        .menu-lantern.left { left: 40px; }
+        .menu-lantern.right { right: 40px; }
+
+        .menu-title {
+            color: var(--accent);
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 22px;
+            letter-spacing: 2px;
+        }
+
+        .menu-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .stage-select-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 550px;
+        }
+
+        .stage-card {
+            background-color: #1f1f1f;
+            border: 2px solid var(--border);
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+
+        .stage-card:hover {
+            border-color: var(--accent);
+            background-color: #272727;
+            transform: translateY(-3px);
+        }
+
+        .stage-card h3 {
+            margin: 0 0 8px 0;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .stage-card p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        h1.game-main-title {
+            color: var(--accent);
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 26px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .stage-info {
+            display: flex;
+            justify-content: space-between;
+            background: #111;
+            padding: 8px 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--accent);
+        }
+
+        .order-zone {
+            background-color: #111;
+            padding: 22px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .order-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background-color: #161616;
+            padding: 0 10px;
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        #target-word {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        /* 第二關迴轉壽司輸送帶 */
+        .conveyor-belt {
+            background: #0d1b2a;
+            border: 2px solid #00acc1;
+            height: 140px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .conveyor-track-line {
+            position: absolute;
+            width: 100%;
+            height: 6px;
+            background: #1b263b;
+            top: 55%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .trash-bin-zone {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #2b0000;
+            border: 2px dashed #ff5252;
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-align: center;
+            color: #ff5252;
+            z-index: 3;
+        }
+
+        /* 第 3 關雙軌道炭火急單介面 */
+        .dual-conveyor-box {
+            background: #220c02;
+            border: 2px solid #ff7043;
+            height: 180px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dual-track {
+            position: absolute;
+            width: 100%;
+            height: 75px;
+            display: flex;
+            align-items: center;
+        }
+        .track-top { top: 10px; border-bottom: 1px dashed rgba(255,112,67,0.3); }
+        .track-bottom { bottom: 10px; }
+
+        .dual-trash-bin {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #3a0e0e;
+            border: 2px dashed #ff7043;
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: center;
+            color: #ff7043;
+            font-size: 11px;
+            z-index: 3;
+        }
+
+        /* 第四關直式黑洞大平台 */
+        .blackhole-platform {
+            background: radial-gradient(circle, #1a0826 0%, #08030d 100%);
+            border: 2px solid #ab47bc;
+            height: 260px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blackhole-bottom-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 45px;
+            background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.85) 60%, transparent 100%);
+            border-top: 3px dashed #ea80fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ea80fc;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: inset 0 10px 25px rgba(186, 104, 200, 0.6);
+            z-index: 3;
+            letter-spacing: 2px;
+        }
+
+        /* 擬真壽司造型 */
+        .sushi-piece {
+            position: absolute;
+            width: 100px;
+            height: 65px;
+            background: #fdfbf7;
+            border: 3px solid #d4af37;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            z-index: 2;
+            transition: transform 0.1s;
+        }
+
+        .sushi-topping {
+            width: 78px;
+            height: 22px;
+            border-radius: 5px 5px 2px 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            margin-bottom: 2px;
+        }
+
+        .sushi-rice {
+            width: 82px;
+            height: 26px;
+            background: #ffffff;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 900;
+            color: #111;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            width: 85%;
+            padding: 12px 20px;
+            font-size: 22px;
+            text-align: center;
+            background-color: #1f1f1f;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        input[type="text"].correct {
+            border-color: var(--correct);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        input[type="text"].incorrect {
+            border-color: var(--incorrect);
+            background-color: rgba(229, 57, 53, 0.1);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .stat-item strong {
+            color: var(--accent);
+            font-size: 16px;
+            margin-left: 5px;
+        }
+
+        .patience-container {
+            margin-top: 12px;
+            width: 100%;
+            height: 8px;
+            background-color: #222;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #patience-bar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--correct);
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        .btn-action {
+            background-color: var(--accent);
+            color: #111;
+            border: none;
+            padding: 12px 35px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #ffa000;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            font-size: 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            color: #fff;
+            border-color: #fff;
+        }
+
+        #result-msg {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 25px;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 封面 -->
+    <div id="cover-screen">
+        <div class="cover-lantern-left">拉</div>
+        <div class="cover-lantern-right">麵</div>
+        <div class="cover-bowl-icon">🍜</div>
+        <h1 class="cover-title">深夜拉麵：指尖職人魂</h1>
+        <div class="cover-subtitle">Midnight Ramen: Typist Soul</div>
+        <button class="btn-start" onclick="enterStoryScreen()">進入深夜食堂</button>
+    </div>
+
+    <!-- 故事導覽 -->
+    <div id="story-screen" class="hidden" onclick="nextStoryPage(event)">
+        <div class="story-center-box">
+            <h2 class="story-header-title">【深夜食堂營業傳說】</h2>
+            <div class="story-content-text" id="story-text">
+當城市陷入沉睡，巷弄深處的紅燈籠亮起。
+這裡是深夜食堂，專門迎接帶著疲憊與飢餓而來的過路人。
+            </div>
+            <div class="story-nav-footer">
+                <button class="btn-secondary" onclick="skipStory(event)">跳過故事</button>
+                <span id="story-page-indicator" style="color: var(--text-muted); font-size: 13px;">1 / 3 頁</span>
+                <button class="btn-action" onclick="nextStoryPage(event)">下一頁</button>
+            </div>
+            <div class="story-tip">提示：點擊畫面任意處、或按鍵盤 ← → 鍵可切換頁面</div>
+        </div>
+    </div>
+
+    <!-- 遊戲主容器 -->
+    <div class="game-wrapper" id="game-wrapper">
+        <h1 class="game-main-title">深夜拉麵食堂</h1>
+        <div class="subtitle" id="scene-subtitle">打字職人挑戰：滿足每一位飢餓的顧客！</div>
+
+        <!-- 關卡選單 -->
+        <div id="menu-overlay" class="overlay hidden">
+            <div class="menu-lantern left">拉</div>
+            <div class="menu-lantern right">麵</div>
+            <h2 class="menu-title">選擇挑戰關卡</h2>
+            <p class="menu-subtitle">點擊下方任一區塊即可直接開始挑戰！</p>
+            
+            <div class="stage-select-menu">
+                <div class="stage-card" onclick="startStage(0)">
+                    <h3>第 1 關：學徒基本功</h3>
+                    <p>木質吧台指法訓練。完成 5 題即過關！</p>
+                </div>
+                <div class="stage-card" onclick="startStage(1)">
+                    <h3>第 2 關：迴轉壽司輸送帶</h3>
+                    <p>壽司掉入垃圾桶前打完消除！完成 6 盤即過關！</p>
+                </div>
+                <div class="stage-card" onclick="startStage(2)">
+                    <h3>第 3 關：炭火雙軌急單夾擊</h3>
+                    <p>上下雙軌道同時出餐！自由選擇優先消除！</p>
+                </div>
+                <div class="stage-card" onclick="startStage(3)">
+                    <h3>第 4 關：黑洞深淵大挑戰</h3>
+                    <p>20秒限時！自由選擇消除壽司，掉滿3盤失敗！</p>
+                </div>
+            </div>
+            <div style="margin-top: 20px;">
+                <button class="btn-secondary" onclick="showStoryAgain()">回顧故事</button>
+            </div>
+        </div>
+
+        <!-- 遊戲主介面 -->
+        <div id="game-play" class="hidden">
+            <div class="stage-info">
+                <span id="stage-title">目前關卡：第 1 關</span>
+                <span id="error-count-display" style="color: var(--incorrect);">錯誤次數：0 / 3</span>
+            </div>
+
+            <!-- 標準訂單框（第 1 關使用） -->
+            <div class="order-zone" id="standard-order-box">
+                <div class="order-label">顧客訂單 (Order)</div>
+                <p id="target-word">ASDF</p>
+            </div>
+
+            <!-- 第 2 關迴轉壽司輸送帶 -->
+            <div class="conveyor-belt hidden" id="conveyor-box">
+                <div class="conveyor-track-line"></div>
+                <div class="trash-bin-zone">🗑️<div style="font-size: 10px; margin-top: 2px;">垃圾桶</div></div>
+                <div class="sushi-piece" id="sushi-piece" style="left:0px; top:50%; transform:translateY(-50%);">
+                    <div class="sushi-topping" id="sushi-topping">鮪魚握壽司</div>
+                    <div class="sushi-rice" id="sushi-word">TUNA</div>
+                </div>
+            </div>
+
+            <!-- 第 3 關雙軌道炭火急單介面 -->
+            <div class="dual-conveyor-box hidden" id="dual-conveyor-box">
+                <div style="position: absolute; top: 4px; left: 10px; color: #ff7043; font-size: 11px; font-weight: bold; z-index:4;">🔥 炭火雙軌道急單 (輸入上下任一單字即可消除)</div>
+                <div class="dual-track track-top">
+                    <div class="dual-trash-bin">🔥 垃圾桶</div>
+                    <div class="sushi-piece" id="dual-sushi-top" style="left: 0px;">
+                        <div class="sushi-topping" id="dual-topping-top">鮭魚握壽司</div>
+                        <div class="sushi-rice" id="dual-word-top">SALMON</div>
+                    </div>
+                </div>
+                <div class="dual-track track-bottom">
+                    <div class="dual-trash-bin">🔥 垃圾桶</div>
+                    <div class="sushi-piece" id="dual-sushi-bottom" style="left: 0px;">
+                        <div class="sushi-topping" id="dual-topping-bottom">玉子燒壽司</div>
+                        <div class="sushi-rice" id="dual-word-bottom">EGG</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第 4 關直式黑洞大平台介面 -->
+            <div class="blackhole-platform hidden" id="blackhole-box">
+                <div style="position: absolute; top: 8px; left: 12px; color: #ea80fc; font-size: 11px; font-weight: bold; z-index:4;">🌌 黑洞深淵大平台 (直接輸入畫面上任一壽司單字即可消除)</div>
+                <div class="blackhole-bottom-zone">🕳️ 底部深淵大黑洞 🕳️</div>
+                <div id="blackhole-sushi-container"></div>
+            </div>
+
+            <input type="text" id="user-input" autocomplete="off" placeholder="在此輸入...">
+            
+            <div class="patience-container">
+                <div id="patience-bar"></div>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item" id="stat-left-label">進度: <strong id="stage-score">0</strong> / <span id="stage-target-num">5</span></div>
+                <div class="stat-item">速度: <strong id="wpm">0</strong> WPM</div>
+            </div>
+            
+            <button class="btn-secondary" style="margin-top: 12px;" onclick="returnToMenu()">返回選單</button>
+        </div>
+
+        <!-- 結算彈窗 -->
+        <div id="status-overlay" class="overlay hidden">
+            <h2 id="status-title" style="color: var(--accent); margin-bottom: 15px;">結算畫面</h2>
+            <p id="result-msg"></p>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <button class="btn-action" onclick="retryStage()" id="action-btn">再試一次</button>
+                <button class="btn-secondary" onclick="returnToMenu()">回選單</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const storyPages = [
+        "當城市陷入沉睡，巷弄深處的紅燈籠亮起。\n這裡是深夜食堂，專門迎接帶著疲憊與飢餓而來的過路人。",
+        "身為新進的打字職人，妳必須用最快、最準確的手速。\n將一碗碗熱騰騰的招牌拉麵與新鮮壽司送上桌，溫暖每一位深夜歸人的胃。",
+        "準備好了嗎？從木質吧台、輸送帶、炭火雙拼到黑洞深淵大挑戰！\n證明妳就是傳說中的深夜食堂英打職人吧！"
+    ];
+    let currentStoryIndex = 0;
+
+    const coverScreenEl = document.getElementById('cover-screen');
+    const storyScreenEl = document.getElementById('story-screen');
+    const storyTextEl = document.getElementById('story-text');
+    const storyPageIndicatorEl = document.getElementById('story-page-indicator');
+    const menuOverlayEl = document.getElementById('menu-overlay');
+
+    function enterStoryScreen() {
+        coverScreenEl.classList.add('hidden');
+        storyScreenEl.classList.remove('hidden');
+    }
+
+    function nextStoryPage(e) {
+        if (e) e.stopPropagation();
+        currentStoryIndex++;
+        if (currentStoryIndex < storyPages.length) {
+            storyTextEl.textContent = storyPages[currentStoryIndex];
+            storyPageIndicatorEl.textContent = `${currentStoryIndex + 1} / ${storyPages.length} 頁`;
+        } else {
+            goToMenu();
+        }
+    }
+
+    function prevStoryPage() {
+        if (currentStoryIndex > 0) {
+            currentStoryIndex--;
+            storyTextEl.textContent = storyPages[currentStoryIndex];
+            storyPageIndicatorEl.textContent = `${currentStoryIndex + 1} / ${storyPages.length} 頁`;
+        }
+    }
+
+    function skipStory(e) {
+        if (e) e.stopPropagation();
+        goToMenu();
+    }
+
+    function showStoryAgain() {
+        currentStoryIndex = 0;
+        storyTextEl.textContent = storyPages[0];
+        storyPageIndicatorEl.textContent = `1 / ${storyPages.length} 頁`;
+        menuOverlayEl.classList.add('hidden');
+        storyScreenEl.classList.remove('hidden');
+    }
+
+    function goToMenu() {
+        storyScreenEl.classList.add('hidden');
+        coverScreenEl.classList.add('hidden');
+        menuOverlayEl.classList.remove('hidden');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (!storyScreenEl.classList.contains('hidden')) {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+                nextStoryPage();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                prevStoryPage();
+            }
+        }
+    });
+
+    const sushiPool = [
+        { word: 'TUNA', name: '鮪魚握壽司', color: '#e53935' },
+        { word: 'SALMON', name: '鮭魚握壽司', color: '#ff7043' },
+        { word: 'EBI', name: '鮮蝦握壽司', color: '#ab47bc' },
+        { word: 'EGG', name: '玉子燒壽司', color: '#ffca28' },
+        { word: 'MISO', name: '味噌湯', color: '#8d6e63' },
+        { word: 'TOFU', name: '豆皮壽司', color: '#d4e157' },
+        { word: 'RICE', name: '白飯糰', color: '#78909c' },
+        { word: 'SQUID', name: '花枝壽司', color: '#26a69a' }
+    ];
+
+    const stages = [
+        {
+            id: 1,
+            name: "第 1 關：學徒基本功",
+            subtitle: "場景：【木質溫馨吧台】 — 基礎指法訓練",
+            targetCount: 5,
+            maxPatience: 140,
+            decreaseRate: 0.3,
+            type: "standard",
+            words: ['ASDF', 'JKL;', 'ASDFGH', 'JKL;LK', 'AAAA', 'SSSS', 'DDDD', 'FFFF'],
+            failMsg: "學徒連續打錯達 3 次！木質吧台前的客人氣得拍桌走人：「連基本按鍵都不熟，太失望了！」"
+        },
+        {
+            id: 2,
+            name: "第 2 關：迴轉壽司輸送帶",
+            subtitle: "場景：【霓虹迴轉壽司台】 — 在壽司掉入垃圾桶前打完消除牠！",
+            targetCount: 6,
+            maxPatience: 120,
+            decreaseRate: 0.25,
+            type: "sushi-conveyor",
+            failMsg: "壽司掉入垃圾桶次數過多！客人生氣地指責：「妳怎麼把新鮮壽司都丟掉啦！」隨即憤而離席……"
+        },
+        {
+            id: 3,
+            name: "第 3 關：炭火雙軌急單夾擊",
+            subtitle: "場景：【熱騰騰炭火雙軌台】 — 上下夾擊，防止餐點掉入垃圾桶！",
+            targetCount: 6,
+            maxPatience: 150,
+            decreaseRate: 0.2,
+            type: "dual-conveyor",
+            failMsg: "炭火雙軌急單掉落滿 3 次！雙軌道餐點來不及出餐，客人生氣地給予負評並憤而離席……"
+        },
+        {
+            id: 4,
+            name: "第 4 關：黑洞深淵大挑戰",
+            subtitle: "場景：【🌌 黑洞深淵大平台】 — 20秒限時防衛戰！",
+            type: "blackhole",
+            failMsg: "黑洞失誤達到 3 次！太多的頂級壽司被黑洞吞噬，客人生氣地痛批保溫箱失守並集體離席！"
+        }
+    ];
+
+    let currentStageIndex = 0;
+    let stageScore = 0;
+    let errorsInStage = 0;
+    
+    let currentWord = '';
+    let startTime;
+    let totalLetters = 0;
+    let gameActive = false;
+    let patienceInterval;
+    let currentPatience = 100;
+    let maxPatience = 100;
+    let patienceDecreaseRate = 0.5;
+
+    let sushiPosition = 0; 
+    let sushiAnimTimer = null;
+
+    let dualPosTop = 0;
+    let dualPosBottom = 0;
+    let dualItemTop = null;
+    let dualItemBottom = null;
+
+    let blackholeSushis = [];
+    let spawnTimer = null;
+
+    const gameWrapperEl = document.getElementById('game-wrapper');
+    const gamePlayEl = document.getElementById('game-play');
+    const sceneSubtitleEl = document.getElementById('scene-subtitle');
+    const standardOrderBoxEl = document.getElementById('standard-order-box');
+    const conveyorBoxEl = document.getElementById('conveyor-box');
+    const dualConveyorBoxEl = document.getElementById('dual-conveyor-box');
+    const blackholeBoxEl = document.getElementById('blackhole-box');
+    const blackholeSushiContainerEl = document.getElementById('blackhole-sushi-container');
+    
+    const sushiPieceEl = document.getElementById('sushi-piece');
+    const sushiToppingEl = document.getElementById('sushi-topping');
+    const sushiWordEl = document.getElementById('sushi-word');
+    const targetWordEl = document.getElementById('target-word');
+    
+    const userInputEl = document.getElementById('user-input');
+    const stageTitleEl = document.getElementById('stage-title');
+    const errorCountDisplayEl = document.getElementById('error-count-display');
+    const stageScoreEl = document.getElementById('stage-score');
+    const statLeftLabelEl = document.getElementById('stat-left-label');
+    const wpmEl = document.getElementById('wpm');
+    const patienceBarEl = document.getElementById('patience-bar');
+    const overlayEl = document.getElementById('status-overlay');
+    const statusTitleEl = document.getElementById('status-title');
+    const resultMsgEl = document.getElementById('result-msg');
+    const actionBtnEl = document.getElementById('action-btn');
+
+    function startStage(index) {
+        currentStageIndex = index;
+        menuOverlayEl.classList.add('hidden');
+        storyScreenEl.classList.add('hidden');
+        overlayEl.classList.add('hidden');
+        gamePlayEl.classList.remove('hidden');
+        
+        gameWrapperEl.className = "game-wrapper stage-theme-" + index;
+        sceneSubtitleEl.textContent = stages[currentStageIndex].subtitle;
+
+        const stage = stages[currentStageIndex];
+        standardOrderBoxEl.classList.add('hidden');
+        conveyorBoxEl.classList.add('hidden');
+        dualConveyorBoxEl.classList.add('hidden');
+        blackholeBoxEl.classList.add('hidden');
+
+        if (stage.type === 'standard') {
+            standardOrderBoxEl.classList.remove('hidden');
+        } else if (stage.type === 'sushi-conveyor') {
+            conveyorBoxEl.classList.remove('hidden');
+        } else if (stage.type === 'dual-conveyor') {
+            dualConveyorBoxEl.classList.remove('hidden');
+        } else if (stage.type === 'blackhole') {
+            blackholeBoxEl.classList.remove('hidden');
+        }
+
+        initGameSession();
+    }
+
+    function initGameSession() {
+        stageScore = 0;
+        errorsInStage = 0;
+        totalLetters = 0;
+        gameActive = true;
+        
+        const stage = stages[currentStageIndex];
+        maxPatience = stage.maxPatience || 140;
+        currentPatience = maxPatience;
+        patienceDecreaseRate = stage.decreaseRate || 0.3;
+        
+        stageTitleEl.textContent = `${stage.name}`;
+        userInputEl.value = '';
+        userInputEl.classList.remove('correct', 'incorrect');
+        userInputEl.focus();
+        
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        if (spawnTimer) clearInterval(spawnTimer);
+
+        if (stage.type === 'blackhole') {
+            errorCountDisplayEl.textContent = `黑洞掉落：0 / 3`;
+            statLeftLabelEl.innerHTML = `時間: <strong id="stage-score">20</strong>s`;
+            blackholeSushis = [];
+            spawnBlackholeSushi();
+            spawnBlackholeSushi();
+            startBlackholeLoop();
+        } else if (stage.type === 'sushi-conveyor') {
+            errorCountDisplayEl.textContent = `錯誤次數：0 / 3`;
+            statLeftLabelEl.innerHTML = `進度: <strong id="stage-score">0</strong> / <span id="stage-target-num">${stage.targetCount}</span>`;
+            setConveyorSushi();
+            startSushiMovement();
+        } else if (stage.type === 'dual-conveyor') {
+            errorCountDisplayEl.textContent = `雙軌掉落：0 / 3`;
+            statLeftLabelEl.innerHTML = `進度: <strong id="stage-score">0</strong> / <span id="stage-target-num">${stage.targetCount}</span>`;
+            setDualConveyorItems();
+            startDualConveyorLoop();
+        } else {
+            errorCountDisplayEl.textContent = `錯誤次數：0 / 3`;
+            statLeftLabelEl.innerHTML = `進度: <strong id="stage-score">0</strong> / <span id="stage-target-num">${stage.targetCount}</span>`;
+            setNewWord();
+        }
+
+        startTime = Date.now();
+        startPatienceTimer();
+    }
+
+    function returnToMenu() {
+        gameActive = false;
+        clearInterval(patienceInterval);
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        if (spawnTimer) clearInterval(spawnTimer);
+        gamePlayEl.classList.add('hidden');
+        overlayEl.classList.add('hidden');
+        storyScreenEl.classList.add('hidden');
+        coverScreenEl.classList.add('hidden');
+        menuOverlayEl.classList.remove('hidden');
+        gameWrapperEl.className = "game-wrapper";
+    }
+
+    function setNewWord() {
+        const stage = stages[currentStageIndex];
+        const randomIndex = Math.floor(Math.random() * stage.words.length);
+        currentWord = stage.words[randomIndex];
+        targetWordEl.textContent = currentWord;
+        updatePatienceBar();
+    }
+
+    function setConveyorSushi() {
+        const randItem = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+        currentWord = randItem.word;
+        sushiWordEl.textContent = currentWord;
+        sushiToppingEl.textContent = randItem.name;
+        sushiToppingEl.style.backgroundColor = randItem.color;
+        sushiPosition = 0;
+        if (sushiPieceEl) sushiPieceEl.style.left = sushiPosition + '%';
+        updatePatienceBar();
+    }
+
+    function setDualConveyorItems() {
+        dualItemTop = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+        dualItemBottom = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+        dualPosTop = 0;
+        dualPosBottom = 0;
+
+        document.getElementById('dual-word-top').textContent = dualItemTop.word;
+        document.getElementById('dual-topping-top').textContent = dualItemTop.name;
+        document.getElementById('dual-topping-top').style.backgroundColor = dualItemTop.color;
+
+        document.getElementById('dual-word-bottom').textContent = dualItemBottom.word;
+        document.getElementById('dual-topping-bottom').textContent = dualItemBottom.name;
+        document.getElementById('dual-topping-bottom').style.backgroundColor = dualItemBottom.color;
+
+        document.getElementById('dual-sushi-top').style.left = '0%';
+        document.getElementById('dual-sushi-bottom').style.left = '0%';
+    }
+
+    function startDualConveyorLoop() {
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        sushiAnimTimer = setInterval(() => {
+            if (!gameActive) return;
+
+            dualPosTop += 0.35;
+            dualPosBottom += 0.35;
+
+            document.getElementById('dual-sushi-top').style.left = dualPosTop + '%';
+            document.getElementById('dual-sushi-bottom').style.left = dualPosBottom + '%';
+
+            if (dualPosTop >= 75) {
+                errorsInStage++;
+                errorCountDisplayEl.textContent = `雙軌掉落：${errorsInStage} / 3`;
+                gameWrapperEl.classList.add('alert-flash');
+                setTimeout(() => gameWrapperEl.classList.remove('alert-flash'), 300);
+                userInputEl.value = '';
+                if (errorsInStage >= 3) {
+                    triggerFail();
+                } else {
+                    dualItemTop = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+                    document.getElementById('dual-word-top').textContent = dualItemTop.word;
+                    document.getElementById('dual-topping-top').textContent = dualItemTop.name;
+                    document.getElementById('dual-topping-top').style.backgroundColor = dualItemTop.color;
+                    dualPosTop = 0;
+                }
+            }
+
+            if (dualPosBottom >= 75) {
+                errorsInStage++;
+                errorCountDisplayEl.textContent = `雙軌掉落：${errorsInStage} / 3`;
+                gameWrapperEl.classList.add('alert-flash');
+                setTimeout(() => gameWrapperEl.classList.remove('alert-flash'), 300);
+                userInputEl.value = '';
+                if (errorsInStage >= 3) {
+                    triggerFail();
+                } else {
+                    dualItemBottom = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+                    document.getElementById('dual-word-bottom').textContent = dualItemBottom.word;
+                    document.getElementById('dual-topping-bottom').textContent = dualItemBottom.name;
+                    document.getElementById('dual-topping-bottom').style.backgroundColor = dualItemBottom.color;
+                    dualPosBottom = 0;
+                }
+            }
+        }, 50);
+    }
+
+    function spawnBlackholeSushi() {
+        if (!gameActive) return;
+        const randItem = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+        const randomX = Math.floor(Math.random() * 70) + 10;
+        const randomY = Math.floor(Math.random() * 70) + 130;
+
+        blackholeSushis.push({
+            word: randItem.word,
+            name: randItem.name,
+            color: randItem.color,
+            x: randomX,
+            y: randomY
+        });
+
+        renderBlackholeSushis();
+    }
+
+    function renderBlackholeSushis() {
+        blackholeSushiContainerEl.innerHTML = '';
+        blackholeSushis.forEach((sushi) => {
+            const el = document.createElement('div');
+            el.className = 'sushi-piece';
+            el.style.left = sushi.x + '%';
+            el.style.bottom = sushi.y + 'px';
+            el.innerHTML = `
+                <div class="sushi-topping" style="background-color: ${sushi.color};">${sushi.name}</div>
+                <div class="sushi-rice">${sushi.word}</div>
+            `;
+            blackholeSushiContainerEl.appendChild(el);
+        });
+    }
+
+    function startBlackholeLoop() {
+        let timeLeft = 20;
+        const timerInterval = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(timerInterval);
+                return;
+            }
+            timeLeft--;
+            const timeEl = document.getElementById('stage-score');
+            if (timeEl) timeEl.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                if (gameActive) winStage();
+            }
+        }, 1000);
+
+        spawnTimer = setInterval(() => {
+            if (!gameActive) return;
+            if (blackholeSushis.length < 4) {
+                spawnBlackholeSushi();
+            }
+        }, 2200);
+
+        sushiAnimTimer = setInterval(() => {
+            if (!gameActive) return;
+
+            for (let i = blackholeSushis.length - 1; i >= 0; i--) {
+                blackholeSushis[i].y -= 0.7;
+
+                if (blackholeSushis[i].y <= 40) {
+                    errorsInStage++;
+                    errorCountDisplayEl.textContent = `黑洞掉落：${errorsInStage} / 3`;
+                    gameWrapperEl.classList.add('alert-flash');
+                    setTimeout(() => gameWrapperEl.classList.remove('alert-flash'), 300);
+
+                    blackholeSushis.splice(i, 1);
+
+                    if (errorsInStage >= 3) {
+                        triggerFail();
+                        return;
+                    }
+                }
+            }
+            renderBlackholeSushis();
+        }, 50);
+    }
+
+    function startSushiMovement() {
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        sushiAnimTimer = setInterval(() => {
+            if (!gameActive) return;
+            sushiPosition += 0.4;
+            if (sushiPieceEl) sushiPieceEl.style.left = sushiPosition + '%';
+
+            if (sushiPosition >= 75) {
+                errorsInStage++;
+                errorCountDisplayEl.textContent = `錯誤次數：${errorsInStage} / 3`;
+                gameWrapperEl.classList.add('alert-flash');
+                setTimeout(() => gameWrapperEl.classList.remove('alert-flash'), 300);
+
+                userInputEl.value = '';
+                if (errorsInStage >= 3) {
+                    triggerFail();
+                } else {
+                    setConveyorSushi();
+                }
+            }
+        }, 50);
+    }
+
+    userInputEl.addEventListener('input', () => {
+        if (!gameActive) return;
+        
+        const stage = stages[currentStageIndex];
+        const inputVal = userInputEl.value.toUpperCase();
+        
+        if (stage.type === 'blackhole') {
+            const matchedIndex = blackholeSushis.findIndex(sushi => sushi.word === inputVal);
+            if (matchedIndex !== -1) {
+                const matchedSushi = blackholeSushis[matchedIndex];
+                blackholeSushis.splice(matchedIndex, 1);
+                userInputEl.value = '';
+                userInputEl.classList.remove('correct', 'incorrect');
+                totalLetters += matchedSushi.word.length;
+                updateWPM();
+                renderBlackholeSushis();
+            } else {
+                const isPartialMatch = blackholeSushis.some(sushi => sushi.word.startsWith(inputVal));
+                if (isPartialMatch && inputVal.length > 0) {
+                    userInputEl.classList.remove('incorrect');
+                    userInputEl.classList.add('correct');
+                } else if (inputVal.length > 0) {
+                    userInputEl.classList.remove('correct');
+                    userInputEl.classList.add('incorrect');
+                } else {
+                    userInputEl.classList.remove('correct', 'incorrect');
+                }
+            }
+        } else if (stage.type === 'dual-conveyor') {
+            let hitTrack = null;
+            if (dualItemTop && inputVal === dualItemTop.word) {
+                hitTrack = 'top';
+            } else if (dualItemBottom && inputVal === dualItemBottom.word) {
+                hitTrack = 'bottom';
+            }
+
+            if (hitTrack) {
+                stageScore++;
+                totalLetters += inputVal.length;
+                document.getElementById('stage-score').textContent = stageScore;
+
+                userInputEl.value = '';
+                userInputEl.classList.remove('correct', 'incorrect');
+                gameWrapperEl.classList.remove('alert-flash');
+                updateWPM();
+
+                if (hitTrack === 'top') {
+                    dualItemTop = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+                    document.getElementById('dual-word-top').textContent = dualItemTop.word;
+                    document.getElementById('dual-topping-top').textContent = dualItemTop.name;
+                    document.getElementById('dual-topping-top').style.backgroundColor = dualItemTop.color;
+                    dualPosTop = 0;
+                } else {
+                    dualItemBottom = sushiPool[Math.floor(Math.random() * sushiPool.length)];
+                    document.getElementById('dual-word-bottom').textContent = dualItemBottom.word;
+                    document.getElementById('dual-topping-bottom').textContent = dualItemBottom.name;
+                    document.getElementById('dual-topping-bottom').style.backgroundColor = dualItemBottom.color;
+                    dualPosBottom = 0;
+                }
+
+                if (stageScore >= stage.targetCount) {
+                    winStage();
+                }
+            } else {
+                const matchTop = dualItemTop && dualItemTop.word.startsWith(inputVal);
+                const matchBottom = dualItemBottom && dualItemBottom.word.startsWith(inputVal);
+
+                if (matchTop || matchBottom) {
+                    userInputEl.classList.remove('incorrect');
+                    userInputEl.classList.add('correct');
+                    gameWrapperEl.classList.remove('alert-flash');
+                } else {
+                    userInputEl.classList.remove('correct');
+                    userInputEl.classList.add('incorrect');
+                    gameWrapperEl.classList.add('alert-flash');
+                    errorsInStage++;
+                    errorCountDisplayEl.textContent = `雙軌掉落：${errorsInStage} / 3`;
+                    userInputEl.value = '';
+                    if (errorsInStage >= 3) {
+                        triggerFail();
+                    }
+                }
+            }
+        } else if (stage.type === 'sushi-conveyor') {
+            if (inputVal === currentWord) {
+                stageScore++;
+                totalLetters += currentWord.length;
+                document.getElementById('stage-score').textContent = stageScore;
+                
+                userInputEl.value = '';
+                userInputEl.classList.remove('correct', 'incorrect');
+                gameWrapperEl.classList.remove('alert-flash');
+                updateWPM();
+                
+                if (stageScore >= stage.targetCount) {
+                    winStage();
+                } else {
+                    setConveyorSushi();
+                }
+                return;
+            }
+            
+            if (currentWord.startsWith(inputVal)) {
+                userInputEl.classList.remove('incorrect');
+                userInputEl.classList.add('correct');
+                gameWrapperEl.classList.remove('alert-flash');
+            } else {
+                userInputEl.classList.remove('correct');
+                userInputEl.classList.add('incorrect');
+                gameWrapperEl.classList.add('alert-flash');
+                
+                errorsInStage++;
+                errorCountDisplayEl.textContent = `錯誤次數：${errorsInStage} / 3`;
+                userInputEl.value = '';
+                
+                if (errorsInStage >= 3) {
+                    triggerFail();
+                }
+            }
+        } else {
+            if (inputVal === currentWord) {
+                stageScore++;
+                totalLetters += currentWord.length;
+                document.getElementById('stage-score').textContent = stageScore;
+                
+                userInputEl.value = '';
+                userInputEl.classList.remove('correct', 'incorrect');
+                gameWrapperEl.classList.remove('alert-flash');
+                updateWPM();
+                
+                if (stageScore >= stage.targetCount) {
+                    winStage();
+                } else {
+                    setNewWord();
+                }
+                return;
+            }
+            
+            if (currentWord.startsWith(inputVal)) {
+                userInputEl.classList.remove('incorrect');
+                userInputEl.classList.add('correct');
+                gameWrapperEl.classList.remove('alert-flash');
+            } else {
+                userInputEl.classList.remove('correct');
+                userInputEl.classList.add('incorrect');
+                gameWrapperEl.classList.add('alert-flash');
+                
+                errorsInStage++;
+                errorCountDisplayEl.textContent = `錯誤次數：${errorsInStage} / 3`;
+                userInputEl.value = '';
+                
+                if (errorsInStage >= 3) {
+                    triggerFail();
+                }
+            }
+        }
+    });
+
+    function updateWPM() {
+        const timePassedMinutes = (Date.now() - startTime) / 60000;
+        if (timePassedMinutes > 0) {
+            const wpm = Math.round((totalLetters / 5) / timePassedMinutes);
+            wpmEl.textContent = wpm;
+        }
+    }
+
+    function startPatienceTimer() {
+        clearInterval(patienceInterval);
+        patienceInterval = setInterval(() => {
+            if (!gameActive) return;
+            currentPatience -= patienceDecreaseRate;
+            updatePatienceBar();
+            if (currentPatience <= 0 && stages[currentStageIndex].type !== 'blackhole') {
+                triggerFail();
+            }
+        }, 100);
+    }
+
+    function updatePatienceBar() {
+        const percentage = Math.max(0, (currentPatience / maxPatience) * 100);
+        patienceBarEl.style.width = percentage + '%';
+
+        if (percentage > 50) {
+            patienceBarEl.style.backgroundColor = 'var(--correct)';
+        } else if (percentage > 20) {
+            patienceBarEl.style.backgroundColor = 'var(--accent)';
+        } else {
+            patienceBarEl.style.backgroundColor = 'var(--incorrect)';
+        }
+    }
+
+    function triggerFail() {
+        gameActive = false;
+        clearInterval(patienceInterval);
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        if (spawnTimer) clearInterval(spawnTimer);
+        gameWrapperEl.classList.remove('alert-flash');
+        
+        const stage = stages[currentStageIndex];
+        statusTitleEl.textContent = `${stage.name} - 營業失敗`;
+        resultMsgEl.innerHTML = `❌ <strong>闖關失敗</strong><br><br>${stage.failMsg}`;
+        actionBtnEl.textContent = '再試一次';
+        overlayEl.classList.remove('hidden');
+    }
+
+    function winStage() {
+        gameActive = false;
+        clearInterval(patienceInterval);
+        if (sushiAnimTimer) clearInterval(sushiAnimTimer);
+        if (spawnTimer) clearInterval(spawnTimer);
+        gameWrapperEl.classList.remove('alert-flash');
+        
+        const stage = stages[currentStageIndex];
+        const finalWpm = wpmEl.textContent;
+        
+        let rankTitle = "";
+        let rankMsg = "";
+
+        if (errorsInStage === 0) {
+            rankTitle = `${stage.name} - ⭐ 完美出師！`;
+            rankMsg = `✨ <strong>評價：【全對・傳說級手速】</strong> ✨<br><br>零失誤完美過關！顧客感動讚嘆：「這是我見過反應最敏捷、手藝最精湛的頂級職人！」<br><br>平均打字速度：<strong>${finalWpm} WPM</strong>`;
+        } else if (errorsInStage === 1) {
+            rankTitle = `${stage.name} - 🌟 優秀職人！`;
+            rankMsg = `👍 <strong>評價：【失誤 1 次・優秀職人】</strong> 👍<br><br>表現非常優秀！雖然稍微小失誤了一次，但迅速修正並完美達成挑戰。顧客滿意地點頭說：「身手矯健，餐點水準很高！」<br><br>平均打字速度：<strong>${finalWpm} WPM</strong>`;
+        } else {
+            rankTitle = `${stage.name} - 👍 合格學徒！`;
+            rankMsg = `😊 <strong>評價：【失誤 2 次・合格學徒】</strong> 😊<br><br>雖然過程驚險萬分、不小心失誤了兩次，但總算驚險守住關卡！顧客笑著說：「好險趕在最後關頭穩住陣腳啦！」<br><br>平均打字速度：<strong>${finalWpm} WPM</strong>`;
+        }
+
+        statusTitleEl.textContent = rankTitle;
+        resultMsgEl.innerHTML = rankMsg;
+        actionBtnEl.textContent = '再次挑戰本關';
+        
+        overlayEl.classList.remove('hidden');
+    }
+
+    function retryStage() {
+        startStage(currentStageIndex);
+    }
+</script>
+
+</body>
+</html>
